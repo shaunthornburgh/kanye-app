@@ -2,14 +2,14 @@
 
 namespace Tests\Feature;
 
+use App\Contracts\Cacheable;
+use App\DTOs\QuoteDTO;
 use App\Models\User;
+use App\Services\QuoteService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Mockery;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
-use App\Services\QuoteService;
-use App\Cache\Cacheable;
-use App\DTOs\QuoteDTO;
-use Mockery;
 
 class QuoteFeatureTest extends TestCase
 {

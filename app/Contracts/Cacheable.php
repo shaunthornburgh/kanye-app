@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Cache;
+namespace App\Contracts;
 
 use Illuminate\Support\Collection;
 

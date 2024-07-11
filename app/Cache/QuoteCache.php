@@ -2,9 +2,10 @@
 
 namespace App\Cache;
 
+use App\Contracts\Cacheable;
 use App\DTOs\QuoteDTO;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 
 class QuoteCache implements Cacheable
 {

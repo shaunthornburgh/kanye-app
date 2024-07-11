@@ -2,18 +2,19 @@
 
 namespace App\Services;
 
-use App\Cache\Cacheable;
-use App\DTOs\QuoteDTO;
+use App\Contracts\Cacheable;
+use App\Contracts\QuoteServiceInterface;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Http;
 
 class QuoteService implements QuoteServiceInterface
 {
     /**
      * @param Cacheable $cache
+     * @param QuoteManager $quoteManager
      */
     public function __construct(
-        private Cacheable $cache
+        private readonly Cacheable    $cache,
+        private readonly QuoteManager $quoteManager
     ) {
     }
 
@@ -23,11 +24,14 @@ class QuoteService implements QuoteServiceInterface
      */
     public function getQuotes(int $count = 5): Collection
     {
-        $quotes = $this->cache->get('kanye_quotes', $count);
+        $source =  $this->quoteManager->getDefaultDriver();
+        $cacheKey = "{$source}_quotes";
+
+        $quotes = $this->cache->get($cacheKey, $count);
 
         if ($quotes->isEmpty()) {
-            $quotes = $this->fetchQuotes($count);
-            $this->cache->put('kanye_quotes', $quotes, 60);
+            $quotes = $this->refreshQuotes($count);
+            $this->cache->put($cacheKey, $quotes, 60);
         }
 
         return $quotes;
@@ -39,23 +43,10 @@ class QuoteService implements QuoteServiceInterface
      */
     public function refreshQuotes(int $count = 5): Collection
     {
-        $quotes = $this->fetchQuotes($count);
-        $this->cache->put('kanye_quotes', $quotes, 60);
-
-        return $quotes;
-    }
-
-    /**
-     * @param int $count
-     * @return Collection
-     */
-    private function fetchQuotes(int $count): Collection
-    {
-        $quotes = collect();
-        for ($i = 0; $i < $count; $i++) {
-            $response = Http::get('https://api.kanye.rest/');
-            $quotes->push(new QuoteDTO($response->json()['quote']));
-        }
+        $source = $this->quoteManager->getDefaultDriver();
+        $quotes = $this->quoteManager->driver($source)->getQuotes($count);
+        $cacheKey = "{$source}_quotes";
+        $this->cache->put($cacheKey, $quotes, 60);
 
         return $quotes;
     }
